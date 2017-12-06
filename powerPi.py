@@ -10,12 +10,23 @@ import paho.mqtt.client as mqtt
 
 def on_message(client, userdata, message):
     """Callback function for subscriber"""
-    print("message received " ,str(message.payload.decode("utf-8")))
+    global on_flag
+    global off_flag    
+
+    payload = str(message.payload.decode("utf-8"))
+    if (payload == "ON"):
+        print("payload is ON")
+        on_flag = True
+    if (payload == "OFF"):
+        print("payload is OFF")
+        off_flag = True
+
+    print("message received ", payload)
     print("message topic=",message.topic)
     print("message qos=",message.qos)
     print("message retain flag=",message.retain)
 
-def listen(host, port, username, password, topic):
+def listen(host, port, username, password, command_topic, state_topic):
     """Listen on an MQTT topic"""
     mqttc = mqtt.Client()
 
@@ -26,49 +37,24 @@ def listen(host, port, username, password, topic):
         mqttc.username_pw_set(username, password)
     
     mqttc.connect(host, port)
-    mqttc.subscribe(topic)
+    mqttc.subscribe(command_topic)
+
+#    global on_flag
+    on_flag = False
+#    global off_flag
+    off_flag = False
 
     while True:
         mqttc.loop()
-
-
-def generate(host, port, username, password, topic, sensors, interval_ms, verbose):
-    """generate data and send it to an MQTT broker"""
-    mqttc = mqtt.Client()
-
-    if username:
-        mqttc.username_pw_set(username, password)
-
-    mqttc.connect(host, port)
-
-    keys = list(sensors.keys())
-    interval_secs = interval_ms / 1000.0
-
-    while True:
-        sensor_id = random.choice(keys)
-        sensor = sensors[sensor_id]
-        min_val, max_val = sensor.get("range", [0, 100])
-        val = random.randint(min_val, max_val)
-
-        data = {
-            "id": sensor_id,
-            "value": val
-        }
-
-        for key in ["lat", "lng", "unit", "type", "description"]:
-            value = sensor.get(key)
-
-            if value is not None:
-                data[key] = value
-
-        payload = json.dumps(data)
-
-        if verbose:
-            print("%s: %s" % (topic, payload))
-
-        mqttc.publish(topic, payload)
-        time.sleep(interval_secs)
-
+        print("on and off flags are ", on_flag, off_flag)
+        if (on_flag):
+            print("publishing ON")
+            mqttc.publish(state_topic, "ON")
+            on_flag = False
+        if (off_flag):
+            print("publishing OFF")
+            mqttc.publish(state_topic, "OFF")
+            off_flag = False
 
 def main(config_path):
     """main entry point, load and validate config and call generate"""
@@ -91,9 +77,10 @@ def main(config_path):
             username = mqtt_config.get("username")
             password = mqtt_config.get("password")
             # topic = mqtt_config.get("topic", "sensors")
-            topic = "home-assistant/powerPi/command/powerPi0/outlet0"
+            command_topic = "home-assistant/powerPi0/outlet0/command"
+            state_topic = "home-assistant/powerPi0/outlet0/state"
 
-            listen(host, port, username, password, topic)
+            listen(host, port, username, password, command_topic, state_topic)
 
             # generate(host, port, username, password, topic, sensors, interval_ms, verbose)
     except IOError as error:
