@@ -1,0 +1,21 @@
+{
+    "mqtt": {
+        "username": "",
+        "password": "",
+        "host": "192.168.86.15",
+        "port": 1883,
+        "topic": "sensors"
+    },
+    "misc": {
+        "interval_ms": 1000,
+        "verbose": false
+    },
+    "sensors": {
+        "Sensor 129": {
+            "range": [0, 100]
+        },
+        "Sensor 229": {
+            "range": [0, 100]
+        }
+    }
+}
