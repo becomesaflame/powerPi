@@ -3,14 +3,12 @@
 """An MQTT connected power outlet controller"""
 import sys
 import json
-import time
-import random
-
+import logging
 import paho.mqtt.client as mqtt
 import RPi.GPIO as gpio
 
 def setupGPIO(pin):
-    """Sets up GPIO"""
+    """Sets up GPIO pins"""
 
     # Use Raspberry Pi board pin numbers
     gpio.setmode(gpio.BOARD)
@@ -27,16 +25,16 @@ def on_message(client, userdata, message):
 
     payload = str(message.payload.decode("utf-8"))
     if (payload == "ON"):
-        print("payload is ON")
+        logging.info("ON command received")
         on_flag = True
     if (payload == "OFF"):
-        print("payload is OFF")
+        logging.info("OFF command received")
         off_flag = True
 
-    print("message received ", payload)
-    print("message topic=",message.topic)
-    print("message qos=",message.qos)
-    print("message retain flag=",message.retain)
+    logging.debug("message received %s", payload)
+    logging.debug("message topic=%s",message.topic)
+    logging.debug("message qos=%s",message.qos)
+    logging.debug("message retain flag=%s",message.retain)
 
 def listen(host, port, username, password, command_topic, state_topic, availability_topic):
     """Listen on an MQTT topic"""
@@ -62,23 +60,27 @@ def listen(host, port, username, password, command_topic, state_topic, availabil
 
     while True:
         mqttc.loop()
-        inPin = gpio.input(5)
-        print("Outputting ", inPin)
         if (on_flag):
-            print("publishing ON")
             mqttc.publish(state_topic, "ON")
             on_flag = False
             gpio.output(3, gpio.HIGH)
+            inPin = gpio.input(5)
+            logging.info("publishing ON state")
+            logging.debug("Outputting %d", inPin)
         if (off_flag):
-            print("publishing OFF")
             mqttc.publish(state_topic, "OFF")
             off_flag = False
             gpio.output(3, gpio.LOW)
+            inPin = gpio.input(5)
+            logging.info("publishing OFF state")
+            logging.debug("Outputting %d", inPin)
 
 def main(config_path):
     """main entry point, load and validate config and call generate"""
     try:
         with open(config_path) as handle:
+            logging.basicConfig(filename='powerPi.log', filemode='w', level=logging.DEBUG)
+
             config = json.load(handle)
             mqtt_config = config.get("mqtt", {})
             misc_config = config.get("misc", {})
@@ -86,10 +88,6 @@ def main(config_path):
 
             interval_ms = misc_config.get("interval_ms", 500)
             verbose = misc_config.get("verbose", False)
-
-            if not sensors:
-                print("no sensors specified in config, nothing to do")
-                return
 
             host = mqtt_config.get("host", "localhost")
             port = mqtt_config.get("port", 1883)
