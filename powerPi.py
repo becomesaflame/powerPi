@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 """An MQTT connected power outlet controller"""
-import sys
 import json
 import logging
 import paho.mqtt.client as mqtt
 import RPi.GPIO as gpio
+import sys
+import time
 
 def setupGPIO(pin):
     """Sets up GPIO pins"""
@@ -59,13 +60,12 @@ def listen(host, port, username, password, outlet):
         mqttc.username_pw_set(username, password)
     
     mqttc.connect(host, port)
+    mqttc.loop_start()
     mqttc.subscribe(command_topic)
 
     # Tell server that we're available
     mqttc.publish(availability_topic, "ON")
 
-    while True:
-        mqttc.loop()
 
 def main(config_path):
     """main entry point, load and validate config and call generate"""
@@ -95,6 +95,9 @@ def main(config_path):
 
             setupGPIO(pin)
             listen(host, port, username, password, outlet0)
+
+            while(1):
+                time.sleep(5)
 
             # generate(host, port, username, password, topic, sensors, interval_ms, verbose)
     except IOError as error:
