@@ -7,6 +7,18 @@ import time
 import random
 
 import paho.mqtt.client as mqtt
+import RPi.GPIO as gpio
+
+def setupGPIO(pin):
+    """Sets up GPIO"""
+
+    # Use Raspberry Pi board pin numbers
+    gpio.setmode(gpio.BOARD)
+
+    # set up the GPIO pin
+    gpio.setup(pin, gpio.OUT)
+    gpio.setup(5, gpio.IN)
+
 
 def on_message(client, userdata, message):
     """Callback function for subscriber"""
@@ -46,15 +58,18 @@ def listen(host, port, username, password, command_topic, state_topic):
 
     while True:
         mqttc.loop()
-        print("on and off flags are ", on_flag, off_flag)
+        inPin = gpio.input(5)
+        print("Outputting ", inPin)
         if (on_flag):
             print("publishing ON")
             mqttc.publish(state_topic, "ON")
             on_flag = False
+            gpio.output(3, gpio.HIGH)
         if (off_flag):
             print("publishing OFF")
             mqttc.publish(state_topic, "OFF")
             off_flag = False
+            gpio.output(3, gpio.LOW)
 
 def main(config_path):
     """main entry point, load and validate config and call generate"""
@@ -80,6 +95,8 @@ def main(config_path):
             command_topic = "home-assistant/powerPi0/outlet0/command"
             state_topic = "home-assistant/powerPi0/outlet0/state"
 
+            pin = 3
+            setupGPIO(pin)
             listen(host, port, username, password, command_topic, state_topic)
 
             # generate(host, port, username, password, topic, sensors, interval_ms, verbose)
