@@ -16,7 +16,7 @@ def setupGPIO(pin):
 
     # set up the GPIO pin
     gpio.setup(pin, gpio.OUT)
-    gpio.setup(5, gpio.IN)
+    gpio.setup(5, gpio.IN) # debug
 
 
 def on_message(client, userdata, message):
@@ -47,6 +47,8 @@ def on_message(client, userdata, message):
 
 def listen(host, port, username, password, outlet):
     """Listen on an MQTT topic"""
+    logging.info("Setting up outlet %s", repr(outlet))
+
     command_topic = outlet.get("command_topic")
     state_topic = outlet.get("state_topic")
     availability_topic = outlet.get("availability_topic")
@@ -62,6 +64,10 @@ def listen(host, port, username, password, outlet):
     mqttc.connect(host, port)
     mqttc.loop_start()
     mqttc.subscribe(command_topic)
+
+    # Set up RPi GPIO pin
+    pin = outlet.get("gpio_pin")
+    setupGPIO(pin)
 
     # Tell server that we're available
     mqttc.publish(availability_topic, "ON")
@@ -91,10 +97,9 @@ def main(config_path):
             availability_topic = "home-assistant/powerPi0/outlet0/availability"
             outlets = config.get("outlets")
             outlet0 = outlets.get("outlet0")
-            pin = outlet0.get("gpio_pin")
 
-            setupGPIO(pin)
-            listen(host, port, username, password, outlet0)
+            for i in outlets:
+                listen(host, port, username, password, outlets[i])
 
             while(1):
                 time.sleep(5)
