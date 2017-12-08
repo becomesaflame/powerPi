@@ -1,21 +1,38 @@
 {
+    "logging": {
+        "level": "DEBUG",
+        "logfile": "powerPi.log"
+    },
     "mqtt": {
         "username": "",
         "password": "",
         "host": "192.168.86.15",
-        "port": 1883,
-        "topic": "sensors"
+        "port": 1883
     },
-    "misc": {
-        "interval_ms": 1000,
-        "verbose": false
-    },
-    "sensors": {
-        "Sensor 129": {
-            "range": [0, 100]
+    "outlets": {
+        "outlet0": {
+            "command_topic": "home-assistant/powerPi0/outlet0/command",
+            "state_topic": "home-assistant/powerPi0/outlet0/state",
+            "availability_topic": "home-assistant/powerPi0/outlet0/availability",
+            "gpio_pin": 3
         },
-        "Sensor 229": {
-            "range": [0, 100]
+        "outlet1": {
+            "command_topic": "home-assistant/powerPi1/outlet1/command",
+            "state_topic": "home-assistant/powerPi1/outlet1/state",
+            "availability_topic": "home-assistant/powerPi1/outlet1/availability",
+            "gpio_pin": 7
+        },
+        "outlet2": {
+            "command_topic": "home-assistant/powerPi2/outlet2/command",
+            "state_topic": "home-assistant/powerPi2/outlet2/state",
+            "availability_topic": "home-assistant/powerPi2/outlet2/availability",
+            "gpio_pin": 8
+        },
+        "outlet3": {
+            "command_topic": "home-assistant/powerPi3/outlet3/command",
+            "state_topic": "home-assistant/powerPi3/outlet3/state",
+            "availability_topic": "home-assistant/powerPi3/outlet3/availability",
+            "gpio_pin": 10
         }
     }
 }
