@@ -39,9 +39,9 @@ def listen(host, port, username, password, command_topic, state_topic):
     mqttc.connect(host, port)
     mqttc.subscribe(command_topic)
 
-#    global on_flag
+    global on_flag
     on_flag = False
-#    global off_flag
+    global off_flag
     off_flag = False
 
     while True:
