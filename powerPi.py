@@ -20,25 +20,37 @@ def setupGPIO(pin):
 
 def on_message(client, userdata, message):
     """Callback function for subscriber"""
-    global on_flag
-    global off_flag    
 
     payload = str(message.payload.decode("utf-8"))
-    if (payload == "ON"):
-        logging.info("ON command received")
-        on_flag = True
-    if (payload == "OFF"):
-        logging.info("OFF command received")
-        off_flag = True
+    state_topic = userdata.get("state_topic")
+    pin = userdata.get("gpio_pin")
 
-    logging.debug("message received %s", payload)
+    if (payload == "ON"):
+        client.publish(state_topic, "ON")
+        gpio.output(pin, gpio.HIGH)
+        inPin = gpio.input(5) # debug
+        logging.info("Turning ON")
+        logging.debug("Outputting %d", inPin)
+    if (payload == "OFF"):
+        client.publish(state_topic, "OFF")
+        gpio.output(pin, gpio.LOW)
+        inPin = gpio.input(5) # debug
+        logging.info("Turning OFF")
+        logging.debug("Outputting %d", inPin)
+
+    logging.debug("message payload %s", payload)
     logging.debug("message topic=%s",message.topic)
     logging.debug("message qos=%s",message.qos)
     logging.debug("message retain flag=%s",message.retain)
+    logging.debug("userdata: %s", repr(userdata))
 
-def listen(host, port, username, password, command_topic, state_topic, availability_topic):
+def listen(host, port, username, password, outlet):
     """Listen on an MQTT topic"""
-    mqttc = mqtt.Client()
+    command_topic = outlet.get("command_topic")
+    state_topic = outlet.get("state_topic")
+    availability_topic = outlet.get("availability_topic")
+
+    mqttc = mqtt.Client(userdata=outlet)
 
     # Attach function to callback
     mqttc.on_message=on_message 
@@ -50,30 +62,10 @@ def listen(host, port, username, password, command_topic, state_topic, availabil
     mqttc.subscribe(command_topic)
 
     # Tell server that we're available
-    #mosquitto_pub -d -h 192.168.86.15 -p 1883 -t home-assistant/powerPi0/outlet0/availability -m "ON"
     mqttc.publish(availability_topic, "ON")
-
-    global on_flag
-    on_flag = False
-    global off_flag
-    off_flag = False
 
     while True:
         mqttc.loop()
-        if (on_flag):
-            mqttc.publish(state_topic, "ON")
-            on_flag = False
-            gpio.output(3, gpio.HIGH)
-            inPin = gpio.input(5)
-            logging.info("publishing ON state")
-            logging.debug("Outputting %d", inPin)
-        if (off_flag):
-            mqttc.publish(state_topic, "OFF")
-            off_flag = False
-            gpio.output(3, gpio.LOW)
-            inPin = gpio.input(5)
-            logging.info("publishing OFF state")
-            logging.debug("Outputting %d", inPin)
 
 def main(config_path):
     """main entry point, load and validate config and call generate"""
@@ -97,10 +89,12 @@ def main(config_path):
             command_topic = "home-assistant/powerPi0/outlet0/command"
             state_topic = "home-assistant/powerPi0/outlet0/state"
             availability_topic = "home-assistant/powerPi0/outlet0/availability"
-            pin = 3
+            outlets = config.get("outlets")
+            outlet0 = outlets.get("outlet0")
+            pin = outlet0.get("gpio_pin")
 
             setupGPIO(pin)
-            listen(host, port, username, password, command_topic, state_topic, availability_topic)
+            listen(host, port, username, password, outlet0)
 
             # generate(host, port, username, password, topic, sensors, interval_ms, verbose)
     except IOError as error:
