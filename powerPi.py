@@ -38,7 +38,7 @@ def on_message(client, userdata, message):
     print("message qos=",message.qos)
     print("message retain flag=",message.retain)
 
-def listen(host, port, username, password, command_topic, state_topic):
+def listen(host, port, username, password, command_topic, state_topic, availability_topic):
     """Listen on an MQTT topic"""
     mqttc = mqtt.Client()
 
@@ -50,6 +50,10 @@ def listen(host, port, username, password, command_topic, state_topic):
     
     mqttc.connect(host, port)
     mqttc.subscribe(command_topic)
+
+    # Tell server that we're available
+    #mosquitto_pub -d -h 192.168.86.15 -p 1883 -t home-assistant/powerPi0/outlet0/availability -m "ON"
+    mqttc.publish(availability_topic, "ON")
 
     global on_flag
     on_flag = False
@@ -94,10 +98,11 @@ def main(config_path):
             # topic = mqtt_config.get("topic", "sensors")
             command_topic = "home-assistant/powerPi0/outlet0/command"
             state_topic = "home-assistant/powerPi0/outlet0/state"
-
+            availability_topic = "home-assistant/powerPi0/outlet0/availability"
             pin = 3
+
             setupGPIO(pin)
-            listen(host, port, username, password, command_topic, state_topic)
+            listen(host, port, username, password, command_topic, state_topic, availability_topic)
 
             # generate(host, port, username, password, topic, sensors, interval_ms, verbose)
     except IOError as error:
