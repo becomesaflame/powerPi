@@ -3,27 +3,26 @@
 # Raspberry Pi controlled power outlets
 switch:
   - platform: mqtt
-    name: powerPi1 outlet0
-    command_topic: "home-assistant/powerPi1/outlet0/command"
-    availability_topic: "home-assistant/powerPi1/outlet0/availability"
-    state_topic: "home-assistant/powerPi1/outlet0/state"
+    name: powerPi0 outlet0
+    command_topic: "home-assistant/powerPi0/outlet0/command"
+    availability_topic: "home-assistant/powerPi1/outlet1/availability"
+    state_topic: "home-assistant/powerPi0/outlet0/state"
     retain: true
   - platform: mqtt
-    name: powerPi2 outlet1
-    command_topic: "home-assistant/powerPi2/outlet1/command"
-    availability_topic: "home-assistant/powerPi2/outlet1/availability"
-    state_topic: "home-assistant/powerPi2/outlet1/state"
+    name: powerPi0 outlet1
+    command_topic: "home-assistant/powerPi0/outlet1/command"
+    availability_topic: "home-assistant/powerPi0/outlet1/availability"
+    state_topic: "home-assistant/powerPi0/outlet1/state"
     retain: true
   - platform: mqtt
-    name: powerPi3 outlet2
-    command_topic: "home-assistant/powerPi3/outlet2/command"
-    availability_topic: "home-assistant/powerPi3/outlet2/availability"
-    state_topic: "home-assistant/powerPi3/outlet2/state"
+    name: powerPi0 outlet2
+    command_topic: "home-assistant/powerPi0/outlet2/command"
+    availability_topic: "home-assistant/powerPi0/outlet2/availability"
+    state_topic: "home-assistant/powerPi0/outlet2/state"
     retain: true
   - platform: mqtt
-    name: powerPi4 outlet3
-    command_topic: "home-assistant/powerPi4/outlet3/command"
-    availability_topic: "home-assistant/powerPi4/outlet3/availability"
-    state_topic: "home-assistant/powerPi5/outlet3/state"
+    name: powerPi0 outlet3
+    command_topic: "home-assistant/powerPi0/outlet3/command"
+    availability_topic: "home-assistant/powerPi0/outlet3/availability"
+    state_topic: "home-assistant/powerPi1/outlet3/state"
     retain: true
-

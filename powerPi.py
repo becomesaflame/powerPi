@@ -28,12 +28,14 @@ def on_message(client, userdata, message):
 
     if (payload == "ON"):
         client.publish(state_topic, "ON")
+        logging.debug("State: Publishing ON to %s", state_topic)
         gpio.output(pin, gpio.HIGH)
         inPin = gpio.input(5) # debug
         logging.info("Turning ON")
         logging.debug("Outputting %d", inPin)
     if (payload == "OFF"):
         client.publish(state_topic, "OFF")
+        logging.debug("State: Publishing OFF to %s", state_topic)
         gpio.output(pin, gpio.LOW)
         inPin = gpio.input(5) # debug
         logging.info("Turning OFF")
@@ -70,7 +72,8 @@ def listen(host, port, username, password, outlet):
     setupGPIO(pin)
 
     # Tell server that we're available
-    mqttc.publish(availability_topic, "ON")
+    mqttc.publish(availability_topic, "ON", retain=True)
+    logging.debug("Available: Publishing ON to %s", availability_topic)
 
 
 def main(config_path):
